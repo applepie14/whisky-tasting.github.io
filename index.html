@@ -82,6 +82,13 @@
     letter-spacing: 0.08em;
   }
 
+  .hint {
+    color: #6a5c44;
+    font-size: 12px;
+    margin-top: 8px;
+    letter-spacing: 0.03em;
+  }
+
   .divider {
     display: flex;
     align-items: center;
@@ -199,11 +206,22 @@
     padding: 3px 9px;
     letter-spacing: 0.02em;
     transition: all 0.15s ease;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
   }
 
   .tag:hover {
     background: rgba(200,134,10,0.2);
     border-color: rgba(200,134,10,0.5);
+    color: var(--amber-pale);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(200,134,10,0.12);
+  }
+
+  .tag.active {
+    background: rgba(200,134,10,0.25);
+    border-color: rgba(200,134,10,0.6);
     color: var(--amber-pale);
   }
 
@@ -224,11 +242,20 @@
     align-items: center;
     gap: 10px;
     transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
   }
 
   .quality-item:hover {
     background: rgba(200,134,10,0.07);
     border-color: rgba(200,134,10,0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(200,134,10,0.1);
+  }
+
+  .quality-item.active {
+    background: rgba(200,134,10,0.1);
+    border-color: rgba(200,134,10,0.45);
   }
 
   .q-icon { font-size: 18px; }
@@ -278,6 +305,119 @@
     animation: fadeUp 0.7s 0.5s ease both;
   }
 
+  /* ── TOOLTIP ── */
+  .tooltip-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    display: none;
+  }
+  .tooltip-overlay.show { display: block; }
+
+  .tooltip {
+    position: fixed;
+    z-index: 999;
+    width: 340px;
+    max-width: calc(100vw - 20px);
+    background: linear-gradient(145deg, #1c1710 0%, #151008 100%);
+    border: 1px solid rgba(200,134,10,0.3);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(200,134,10,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+    display: none;
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .tooltip.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .tooltip-arrow {
+    position: absolute;
+    width: 14px; height: 14px;
+    background: #1c1710;
+    border: 1px solid rgba(200,134,10,0.3);
+    transform: rotate(45deg);
+  }
+  .tooltip-arrow.top {
+    top: -7px;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+  }
+  .tooltip-arrow.bottom {
+    bottom: -7px;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }
+
+  .tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .tooltip-emoji { font-size: 26px; line-height: 1; }
+  .tooltip-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--amber-pale);
+  }
+  .tooltip-close {
+    margin-left: auto;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #777;
+    width: 26px; height: 26px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .tooltip-close:hover {
+    color: #fff;
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .tooltip-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+  .tooltip-tag-item {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(200,134,10,0.12);
+    border: 1px solid rgba(200,134,10,0.25);
+    color: var(--cream2);
+  }
+
+  .tooltip-desc {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: #c8c0b0;
+    margin-bottom: 12px;
+  }
+
+  .tooltip-tip {
+    background: rgba(200,134,10,0.08);
+    border: 1px solid rgba(200,134,10,0.18);
+    border-radius: 10px;
+    padding: 9px 13px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #a09880;
+  }
+  .tooltip-tip-icon {
+    color: var(--amber-light);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -290,10 +430,28 @@
   @media (max-width: 600px) {
     .cat-grid { grid-template-columns: 1fr 1fr; }
     .finish-qualities { grid-template-columns: 1fr 1fr; }
+    .tooltip { width: calc(100vw - 20px); }
   }
 </style>
 </head>
 <body>
+
+<!-- Tooltip Elements -->
+<div class="tooltip-overlay" id="tooltipOverlay"></div>
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-arrow top" id="tooltipArrow"></div>
+  <div class="tooltip-header">
+    <span class="tooltip-emoji" id="tooltipEmoji"></span>
+    <span class="tooltip-name" id="tooltipName"></span>
+    <button class="tooltip-close" id="tooltipClose">✕</button>
+  </div>
+  <div class="tooltip-tags" id="tooltipTags"></div>
+  <div class="tooltip-desc" id="tooltipDesc"></div>
+  <div class="tooltip-tip">
+    <span class="tooltip-tip-icon">💡</span><span id="tooltipTip"></span>
+  </div>
+</div>
+
 <div class="container">
 
   <header>
@@ -301,9 +459,10 @@
     <h1>위스키 테이스팅 노트</h1>
     <div class="divider"><div class="divider-gem"></div></div>
     <p class="subtitle">Nose · Palate · Finish</p>
+    <p class="hint">각 요소를 클릭하면 자세한 설명을 볼 수 있습니다</p>
   </header>
 
-  <!-- NOSE -->
+  <!-- ═══ NOSE ═══ -->
   <div class="section nose">
     <div class="section-header">
       <div class="section-icon">👃</div>
@@ -316,84 +475,84 @@
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>과일 (Fruity)</div>
         <div class="tags">
-          <span class="tag">사과</span><span class="tag">배</span><span class="tag">복숭아</span>
-          <span class="tag">살구</span><span class="tag">자두</span><span class="tag">건포도</span>
-          <span class="tag">무화과</span><span class="tag">바나나</span><span class="tag">오렌지 껍질</span>
-          <span class="tag">레몬</span><span class="tag">파인애플</span><span class="tag">체리</span>
+          <span class="tag" data-key="n-사과">사과</span><span class="tag" data-key="n-배">배</span><span class="tag" data-key="n-복숭아">복숭아</span>
+          <span class="tag" data-key="n-살구">살구</span><span class="tag" data-key="n-자두">자두</span><span class="tag" data-key="n-건포도">건포도</span>
+          <span class="tag" data-key="n-무화과">무화과</span><span class="tag" data-key="n-바나나">바나나</span><span class="tag" data-key="n-오렌지껍질">오렌지 껍질</span>
+          <span class="tag" data-key="n-레몬">레몬</span><span class="tag" data-key="n-파인애플">파인애플</span><span class="tag" data-key="n-체리">체리</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>꽃 (Floral)</div>
         <div class="tags">
-          <span class="tag">장미</span><span class="tag">제비꽃</span><span class="tag">재스민</span>
-          <span class="tag">라벤더</span><span class="tag">헤더</span><span class="tag">오렌지 꽃</span>
-          <span class="tag">풀꽃</span>
+          <span class="tag" data-key="n-장미">장미</span><span class="tag" data-key="n-제비꽃">제비꽃</span><span class="tag" data-key="n-재스민">재스민</span>
+          <span class="tag" data-key="n-라벤더">라벤더</span><span class="tag" data-key="n-헤더">헤더</span><span class="tag" data-key="n-오렌지꽃">오렌지 꽃</span>
+          <span class="tag" data-key="n-풀꽃">풀꽃</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>곡물 / 견과 (Cereal / Nutty)</div>
         <div class="tags">
-          <span class="tag">보리</span><span class="tag">오트밀</span><span class="tag">빵</span>
-          <span class="tag">아몬드</span><span class="tag">헤이즐넛</span><span class="tag">호두</span>
-          <span class="tag">마지판</span>
+          <span class="tag" data-key="n-보리">보리</span><span class="tag" data-key="n-오트밀">오트밀</span><span class="tag" data-key="n-빵">빵</span>
+          <span class="tag" data-key="n-아몬드">아몬드</span><span class="tag" data-key="n-헤이즐넛">헤이즐넛</span><span class="tag" data-key="n-호두">호두</span>
+          <span class="tag" data-key="n-마지판">마지판</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>달콤 (Sweet)</div>
         <div class="tags">
-          <span class="tag">바닐라</span><span class="tag">카라멜</span><span class="tag">토피</span>
-          <span class="tag">꿀</span><span class="tag">메이플 시럽</span><span class="tag">버터스카치</span>
-          <span class="tag">초콜릿</span>
+          <span class="tag" data-key="n-바닐라">바닐라</span><span class="tag" data-key="n-카라멜">카라멜</span><span class="tag" data-key="n-토피">토피</span>
+          <span class="tag" data-key="n-꿀">꿀</span><span class="tag" data-key="n-메이플시럽">메이플 시럽</span><span class="tag" data-key="n-버터스카치">버터스카치</span>
+          <span class="tag" data-key="n-초콜릿">초콜릿</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>나무 / 오크 (Woody)</div>
         <div class="tags">
-          <span class="tag">오크</span><span class="tag">삼나무</span><span class="tag">송진</span>
-          <span class="tag">샌달우드</span><span class="tag">오래된 나무</span><span class="tag">연필심</span>
+          <span class="tag" data-key="n-오크">오크</span><span class="tag" data-key="n-삼나무">삼나무</span><span class="tag" data-key="n-송진">송진</span>
+          <span class="tag" data-key="n-샌달우드">샌달우드</span><span class="tag" data-key="n-오래된나무">오래된 나무</span><span class="tag" data-key="n-연필심">연필심</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>스모키 / 피트 (Smoky)</div>
         <div class="tags">
-          <span class="tag">피트</span><span class="tag">모닥불 연기</span><span class="tag">훈제</span>
-          <span class="tag">재</span><span class="tag">타르</span><span class="tag">병원약</span>
-          <span class="tag">아이오딘</span><span class="tag">해조류</span>
+          <span class="tag" data-key="n-피트">피트</span><span class="tag" data-key="n-모닥불연기">모닥불 연기</span><span class="tag" data-key="n-훈제">훈제</span>
+          <span class="tag" data-key="n-재">재</span><span class="tag" data-key="n-타르">타르</span><span class="tag" data-key="n-병원약">병원약</span>
+          <span class="tag" data-key="n-아이오딘">아이오딘</span><span class="tag" data-key="n-해조류">해조류</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>스파이시 (Spicy)</div>
         <div class="tags">
-          <span class="tag">흑후추</span><span class="tag">계피</span><span class="tag">정향</span>
-          <span class="tag">생강</span><span class="tag">넛맥</span><span class="tag">아니스</span>
-          <span class="tag">고수</span>
+          <span class="tag" data-key="n-흑후추">흑후추</span><span class="tag" data-key="n-계피">계피</span><span class="tag" data-key="n-정향">정향</span>
+          <span class="tag" data-key="n-생강">생강</span><span class="tag" data-key="n-넛맥">넛맥</span><span class="tag" data-key="n-아니스">아니스</span>
+          <span class="tag" data-key="n-고수">고수</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>와인 / 주류 (Winey)</div>
         <div class="tags">
-          <span class="tag">셰리</span><span class="tag">포트</span><span class="tag">레드 와인</span>
-          <span class="tag">건자두</span><span class="tag">다크 베리</span><span class="tag">포도</span>
+          <span class="tag" data-key="n-셰리">셰리</span><span class="tag" data-key="n-포트">포트</span><span class="tag" data-key="n-레드와인">레드 와인</span>
+          <span class="tag" data-key="n-건자두">건자두</span><span class="tag" data-key="n-다크베리">다크 베리</span><span class="tag" data-key="n-포도">포도</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>유제품 / 크리미 (Creamy)</div>
         <div class="tags">
-          <span class="tag">버터</span><span class="tag">크림</span><span class="tag">우유</span>
-          <span class="tag">치즈</span><span class="tag">사워크림</span>
+          <span class="tag" data-key="n-버터">버터</span><span class="tag" data-key="n-크림">크림</span><span class="tag" data-key="n-우유">우유</span>
+          <span class="tag" data-key="n-치즈">치즈</span><span class="tag" data-key="n-사워크림">사워크림</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>미네랄 / 흙 (Earthy)</div>
         <div class="tags">
-          <span class="tag">습한 흙</span><span class="tag">이끼</span><span class="tag">버섯</span>
-          <span class="tag">젖은 돌</span><span class="tag">가죽</span><span class="tag">담배</span>
+          <span class="tag" data-key="n-습한흙">습한 흙</span><span class="tag" data-key="n-이끼">이끼</span><span class="tag" data-key="n-버섯">버섯</span>
+          <span class="tag" data-key="n-젖은돌">젖은 돌</span><span class="tag" data-key="n-가죽">가죽</span><span class="tag" data-key="n-담배">담배</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- PALATE -->
+  <!-- ═══ PALATE ═══ -->
   <div class="section palate">
     <div class="section-header">
       <div class="section-icon">👅</div>
@@ -406,77 +565,77 @@
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>단맛 (Sweetness)</div>
         <div class="tags">
-          <span class="tag">꿀</span><span class="tag">갈색 설탕</span><span class="tag">바닐라 크림</span>
-          <span class="tag">카라멜</span><span class="tag">잼</span><span class="tag">말린 과일</span>
+          <span class="tag" data-key="p-꿀">꿀</span><span class="tag" data-key="p-갈색설탕">갈색 설탕</span><span class="tag" data-key="p-바닐라크림">바닐라 크림</span>
+          <span class="tag" data-key="p-카라멜">카라멜</span><span class="tag" data-key="p-잼">잼</span><span class="tag" data-key="p-말린과일">말린 과일</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>과일 (Fruit)</div>
         <div class="tags">
-          <span class="tag">그린 애플</span><span class="tag">시트러스</span><span class="tag">복숭아</span>
-          <span class="tag">망고</span><span class="tag">무화과</span><span class="tag">베리류</span>
+          <span class="tag" data-key="p-그린애플">그린 애플</span><span class="tag" data-key="p-시트러스">시트러스</span><span class="tag" data-key="p-복숭아">복숭아</span>
+          <span class="tag" data-key="p-망고">망고</span><span class="tag" data-key="p-무화과">무화과</span><span class="tag" data-key="p-베리류">베리류</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>스파이시 (Spice)</div>
         <div class="tags">
-          <span class="tag">화이트 페퍼</span><span class="tag">계피</span><span class="tag">생강</span>
-          <span class="tag">칠리 열감</span><span class="tag">정향</span><span class="tag">올스파이스</span>
+          <span class="tag" data-key="p-화이트페퍼">화이트 페퍼</span><span class="tag" data-key="p-계피">계피</span><span class="tag" data-key="p-생강">생강</span>
+          <span class="tag" data-key="p-칠리열감">칠리 열감</span><span class="tag" data-key="p-정향">정향</span><span class="tag" data-key="p-올스파이스">올스파이스</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>오크 / 나무 (Oak)</div>
         <div class="tags">
-          <span class="tag">토스티 오크</span><span class="tag">타닌</span><span class="tag">시더</span>
-          <span class="tag">바닐린</span><span class="tag">코코넛</span>
+          <span class="tag" data-key="p-토스티오크">토스티 오크</span><span class="tag" data-key="p-타닌">타닌</span><span class="tag" data-key="p-시더">시더</span>
+          <span class="tag" data-key="p-바닐린">바닐린</span><span class="tag" data-key="p-코코넛">코코넛</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>구운 것 (Roasted)</div>
         <div class="tags">
-          <span class="tag">다크 초콜릿</span><span class="tag">에스프레소</span><span class="tag">캐러멜라이즈</span>
-          <span class="tag">구운 곡물</span><span class="tag">토스트</span>
+          <span class="tag" data-key="p-다크초콜릿">다크 초콜릿</span><span class="tag" data-key="p-에스프레소">에스프레소</span><span class="tag" data-key="p-캐러멜라이즈">캐러멜라이즈</span>
+          <span class="tag" data-key="p-구운곡물">구운 곡물</span><span class="tag" data-key="p-토스트">토스트</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>스모키 / 피트 (Smoke)</div>
         <div class="tags">
-          <span class="tag">BBQ</span><span class="tag">피트 흙</span><span class="tag">연기</span>
-          <span class="tag">크레오소트</span><span class="tag">짭짤한 재</span>
+          <span class="tag" data-key="p-BBQ">BBQ</span><span class="tag" data-key="p-피트흙">피트 흙</span><span class="tag" data-key="p-연기">연기</span>
+          <span class="tag" data-key="p-크레오소트">크레오소트</span><span class="tag" data-key="p-짭짤한재">짭짤한 재</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>짠맛 / 미네랄 (Saline)</div>
         <div class="tags">
-          <span class="tag">바닷소금</span><span class="tag">올리브</span><span class="tag">굴</span>
-          <span class="tag">미네랄</span><span class="tag">금속성</span>
+          <span class="tag" data-key="p-바닷소금">바닷소금</span><span class="tag" data-key="p-올리브">올리브</span><span class="tag" data-key="p-굴">굴</span>
+          <span class="tag" data-key="p-미네랄">미네랄</span><span class="tag" data-key="p-금속성">금속성</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>쓴맛 (Bitter)</div>
         <div class="tags">
-          <span class="tag">다크 초콜릿 쓴맛</span><span class="tag">에스프레소</span>
-          <span class="tag">호피</span><span class="tag">타닌 드라이</span>
+          <span class="tag" data-key="p-다크초콜릿쓴맛">다크 초콜릿 쓴맛</span><span class="tag" data-key="p-에스프레소b">에스프레소</span>
+          <span class="tag" data-key="p-호피">호피</span><span class="tag" data-key="p-타닌드라이">타닌 드라이</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>산미 (Acidic)</div>
         <div class="tags">
-          <span class="tag">레몬</span><span class="tag">그린 애플 산</span><span class="tag">발사믹</span>
-          <span class="tag">요거트</span><span class="tag">와인 산미</span>
+          <span class="tag" data-key="p-레몬">레몬</span><span class="tag" data-key="p-그린애플산">그린 애플 산</span><span class="tag" data-key="p-발사믹">발사믹</span>
+          <span class="tag" data-key="p-요거트">요거트</span><span class="tag" data-key="p-와인산미">와인 산미</span>
         </div>
       </div>
       <div class="cat-card">
         <div class="cat-name"><span class="cat-dot"></span>텍스처 (Texture)</div>
         <div class="tags">
-          <span class="tag">오일리</span><span class="tag">실크</span><span class="tag">크리미</span>
-          <span class="tag">워터리</span><span class="tag">두꺼운</span><span class="tag">떫음</span>
+          <span class="tag" data-key="p-오일리">오일리</span><span class="tag" data-key="p-실크">실크</span><span class="tag" data-key="p-크리미">크리미</span>
+          <span class="tag" data-key="p-워터리">워터리</span><span class="tag" data-key="p-두꺼운">두꺼운</span><span class="tag" data-key="p-떫음">떫음</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- FINISH -->
+  <!-- ═══ FINISH ═══ -->
   <div class="section finish">
     <div class="section-header">
       <div class="section-icon">✨</div>
@@ -487,80 +646,50 @@
     </div>
 
     <div class="finish-qualities">
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-길이">
         <span class="q-icon">⏱️</span>
-        <div class="q-text">
-          <div class="q-label">길이 (Length)</div>
-          <div class="q-desc">짧음 · 중간 · 길음 · 매우 긺</div>
-        </div>
+        <div class="q-text"><div class="q-label">길이 (Length)</div><div class="q-desc">짧음 · 중간 · 길음 · 매우 긺</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-열감">
         <span class="q-icon">🔥</span>
-        <div class="q-text">
-          <div class="q-label">열감 (Warmth)</div>
-          <div class="q-desc">부드러움 · 따뜻함 · 강한 열감 · 화끈</div>
-        </div>
+        <div class="q-text"><div class="q-label">열감 (Warmth)</div><div class="q-desc">부드러움 · 따뜻함 · 강한 열감 · 화끈</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-달콤한여운">
         <span class="q-icon">🍯</span>
-        <div class="q-text">
-          <div class="q-label">달콤한 여운</div>
-          <div class="q-desc">꿀 · 캐러멜 · 바닐라 · 초콜릿</div>
-        </div>
+        <div class="q-text"><div class="q-label">달콤한 여운</div><div class="q-desc">꿀 · 캐러멜 · 바닐라 · 초콜릿</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-스파이시여운">
         <span class="q-icon">🌶️</span>
-        <div class="q-text">
-          <div class="q-label">스파이시 여운</div>
-          <div class="q-desc">후추 · 계피 · 생강 · 흑후추</div>
-        </div>
+        <div class="q-text"><div class="q-label">스파이시 여운</div><div class="q-desc">후추 · 계피 · 생강 · 흑후추</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-과일여운">
         <span class="q-icon">🍎</span>
-        <div class="q-text">
-          <div class="q-label">과일 여운</div>
-          <div class="q-desc">시트러스 · 건과일 · 베리</div>
-        </div>
+        <div class="q-text"><div class="q-label">과일 여운</div><div class="q-desc">시트러스 · 건과일 · 베리</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-드라이타닌">
         <span class="q-icon">🪨</span>
-        <div class="q-text">
-          <div class="q-label">드라이 / 타닌</div>
-          <div class="q-desc">드라이 오크 · 수렴성 · 미네랄</div>
-        </div>
+        <div class="q-text"><div class="q-label">드라이 / 타닌</div><div class="q-desc">드라이 오크 · 수렴성 · 미네랄</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-스모키여운">
         <span class="q-icon">🔥</span>
-        <div class="q-text">
-          <div class="q-label">스모키 여운</div>
-          <div class="q-desc">피트 연기 · 훈제 · 재 · 흙</div>
-        </div>
+        <div class="q-text"><div class="q-label">스모키 여운</div><div class="q-desc">피트 연기 · 훈제 · 재 · 흙</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-클린">
         <span class="q-icon">🌊</span>
-        <div class="q-text">
-          <div class="q-label">클린 / 깨끗함</div>
-          <div class="q-desc">깔끔한 끝 · 잔향 없이 사라짐</div>
-        </div>
+        <div class="q-text"><div class="q-label">클린 / 깨끗함</div><div class="q-desc">깔끔한 끝 · 잔향 없이 사라짐</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-오크우디">
         <span class="q-icon">🍫</span>
-        <div class="q-text">
-          <div class="q-label">오크 / 우디</div>
-          <div class="q-desc">새 오크 · 바닐라 · 코코넛 · 타닌</div>
-        </div>
+        <div class="q-text"><div class="q-label">오크 / 우디</div><div class="q-desc">새 오크 · 바닐라 · 코코넛 · 타닌</div></div>
       </div>
-      <div class="quality-item">
+      <div class="quality-item" data-key="f-복합성">
         <span class="q-icon">💫</span>
-        <div class="q-text">
-          <div class="q-label">복합성 (Complexity)</div>
-          <div class="q-desc">단순 · 보통 · 복합적 · 레이어드</div>
-        </div>
+        <div class="q-text"><div class="q-label">복합성 (Complexity)</div><div class="q-desc">단순 · 보통 · 복합적 · 레이어드</div></div>
       </div>
     </div>
   </div>
 
-  <!-- Overall Score -->
+  <!-- ═══ Overall Score ═══ -->
   <div class="section" style="animation-delay:0.4s">
     <div class="section-header">
       <div class="section-icon" style="background:rgba(200,134,10,0.12);border:1px solid rgba(200,134,10,0.3);">⭐</div>
@@ -583,5 +712,283 @@
     Whisky Blind Tasting Reference · Nose · Palate · Finish
   </footer>
 </div>
+
+<script>
+// ═══════════════════════════════════════════
+// TOOLTIP DATA — 모든 요소의 상세 설명
+// ═══════════════════════════════════════════
+const DATA = {
+  // ── NOSE 과일 ──
+  "n-사과": { emoji:"🍏", name:"사과", desc:"청사과의 상큼하고 싱그러운 향. 주로 로우랜드나 가벼운 스페이사이드 위스키에서 발견됩니다. 신선한 과수원을 연상시키며, 숙성 초기의 뉴메이크 스피릿에서도 자주 느껴집니다.", tip:"버번 배럴 숙성에서 더 두드러지며 사과 품종에 따라 뉘앙스가 다름" },
+  "n-배": { emoji:"🍐", name:"배", desc:"잘 익은 배의 부드럽고 달콤한 향. 사과보다 더 둥글고 크리미한 느낌으로, 글렌피딕이나 글렌리벳 같은 클래식 스페이사이드 위스키에서 전형적으로 나타납니다.", tip:"바닐라, 꿀 노트와 자주 함께 등장하는 조합" },
+  "n-복숭아": { emoji:"🍑", name:"복숭아", desc:"잘 익은 복숭아의 즙이 많고 달콤한 향. 트로피컬한 뉘앙스를 더해주며, 특히 오크 캐스크에서 장기 숙성된 위스키에서 발견됩니다.", tip:"셰리 캐스크 피니시에서 강화되는 경향이 있음" },
+  "n-살구": { emoji:"🏵️", name:"살구", desc:"말린 살구의 농축된 단맛과 약간의 산미. 셰리 캐스크 숙성 위스키에서 자주 발견되며, 건과일 계열의 풍부함을 더해줍니다.", tip:"아몬드, 메이플 시럽 노트와 함께 잘 어울리는 조화" },
+  "n-자두": { emoji:"🫐", name:"자두", desc:"잘 익은 자두의 진하고 달콤한 향. 레드 프루츠 계열의 깊이감을 부여하며, 와인이나 셰리 캐스크에서 자주 나타납니다.", tip:"올로로소 셰리 캐스크 숙성의 시그니처 과일향 중 하나" },
+  "n-건포도": { emoji:"🍇", name:"건포도", desc:"말린 포도의 농축된 단맛. PX(페드로 히메네즈) 셰리 캐스크에서 특히 진하게 나타나며, 장기 숙성 셰리 캐스크 위스키의 핵심 캐릭터입니다.", tip:"다크 초콜릿, 에스프레소와 함께 '리치 피니시' 형성" },
+  "n-무화과": { emoji:"🫒", name:"무화과", desc:"무화과의 부드럽고 달콤한 향. 꿀과 비슷한 자연스러운 단맛을 가지며, 셰리 캐스크 숙성에서 풍부해집니다.", tip:"PX 셰리 캐스크와 올로로소 캐스크 모두에서 발견 가능" },
+  "n-바나나": { emoji:"🍌", name:"바나나", desc:"바나나의 에스테르 향. 발효 과정에서 이소아밀 아세테이트가 생성되며 만들어지는 특유의 프루티한 캐릭터입니다.", tip:"특히 뉴메이크 스피릿이나 젊은 위스키에서 자주 느껴짐" },
+  "n-오렌지껍질": { emoji:"🍊", name:"오렌지 껍질", desc:"오렌지 껍질(제스트)의 쌉싸름하고 시트러스한 향. 마말레이드와 비슷한 복합적 뉘앙스로, 상쾌한 느낌을 줍니다.", tip:"셰리 캐스크와 버번 캐스크 모두에서 나타날 수 있는 시트러스 노트" },
+  "n-레몬": { emoji:"🍋", name:"레몬", desc:"레몬의 밝고 산뜻한 시트러스 향. 위스키에 활력과 신선함을 더해주며, 가벼운 캐릭터의 위스키에서 두드러집니다.", tip:"하이랜드·로우랜드의 라이트 바디 위스키에서 자주 발견" },
+  "n-파인애플": { emoji:"🍍", name:"파인애플", desc:"열대 과일 파인애플의 달콤하고 이국적인 향. 트로피컬 캐릭터의 핵심으로, 독특한 에스테르 화합물에서 비롯됩니다.", tip:"장기 숙성 그레인 위스키나 리필 캐스크에서 주로 발견" },
+  "n-체리": { emoji:"🍒", name:"체리", desc:"마라스키노 체리의 달콤하면서 약간 쓴 향. 셰리 캐스크의 대표적 과일 노트로, 레드 프루츠 계열의 화사함을 더합니다.", tip:"PX 셰리 캐스크 숙성에서 특히 강하게 나타남" },
+
+  // ── NOSE 꽃 ──
+  "n-장미": { emoji:"🌹", name:"장미", desc:"섬세하고 우아한 장미 꽃잎의 향. 로즈워터를 연상시키며, 위스키에 여성적이고 로맨틱한 뉘앙스를 더해주는 고급스러운 향입니다.", tip:"하이랜드·스페이사이드 위스키에서 주로 발견됨" },
+  "n-제비꽃": { emoji:"💜", name:"제비꽃", desc:"은은하고 파우더리한 제비꽃 향. 클래식한 올드 스타일 위스키에서 발견되는 빈티지한 캐릭터로, 약간의 달콤함과 비누 같은 청결한 느낌을 동반합니다.", tip:"오크 숙성의 바닐라 향과 아름답게 어우러짐" },
+  "n-재스민": { emoji:"🤍", name:"재스민", desc:"달콤하고 관능적인 재스민 꽃향. 이국적이고 향기로운 뉘앙스를 위스키에 부여하며, 플로럴 캐릭터가 강한 증류소에서 발견됩니다.", tip:"스페이사이드 위스키의 섬세한 플로럴 노트로 등장" },
+  "n-라벤더": { emoji:"💐", name:"라벤더", desc:"허브와 꽃의 중간에 있는 라벤더 향. 청량하면서도 약간 의약적인 느낌이 특징이며, 가볍고 정제된 위스키에서 나타납니다.", tip:"로우랜드 위스키나 트리플 디스틸드 위스키에서 발견" },
+  "n-헤더": { emoji:"🌿", name:"헤더", desc:"스코틀랜드 황야에 피는 헤더(히스) 꽃의 야생적이고 허브같은 향. 하이랜드 위스키의 테루아를 대표하는 향으로, 꿀과 허브의 중간 지점에 있습니다.", tip:"히스 꿀, 풀, 이끼 노트와 함께 등장하는 경향" },
+  "n-오렌지꽃": { emoji:"🧡", name:"오렌지 꽃", desc:"오렌지 블러썸의 달콤하고 시트러스한 꽃향. 밝고 화사한 인상을 주며, 시트러스 과일 노트와 꽃 노트를 잇는 다리 역할을 합니다.", tip:"네롤리 오일과 유사한 향으로, 정제된 위스키에서 발견" },
+  "n-풀꽃": { emoji:"🌼", name:"풀꽃", desc:"들판의 야생 풀꽃 향. 신선하고 자연스러운 그린 플로럴 캐릭터로, 봄의 목초지를 연상시킵니다.", tip:"가벼운 로우랜드·스페이사이드 위스키에서 발견" },
+
+  // ── NOSE 곡물/견과 ──
+  "n-보리": { emoji:"🌾", name:"보리", desc:"맥아 보리의 고소하고 곡물적인 향. 위스키 원료의 가장 기본적인 캐릭터로, 몰팅 과정과 매싱에서 오는 근본적인 곡물 느낌입니다.", tip:"싱글 몰트 위스키의 정체성을 이루는 기본 향" },
+  "n-오트밀": { emoji:"🥣", name:"오트밀", desc:"부드럽고 크리미한 오트밀의 고소한 향. 포근하고 따뜻한 인상을 주며, 곡물 캐릭터가 강한 위스키에서 크림·버터와 함께 등장합니다.", tip:"아침 식탁을 연상시키는 편안한 곡물 노트" },
+  "n-빵": { emoji:"🍞", name:"빵", desc:"갓 구운 빵의 따뜻하고 이스트한 향. 베이커리 계열의 친근한 캐릭터로, 맥아의 영향이 강한 위스키에서 두드러집니다.", tip:"토스트 노트와 연결되어 '베이커리' 프로파일 형성" },
+  "n-아몬드": { emoji:"🌰", name:"아몬드", desc:"고소하고 약간 달콤한 아몬드 향. 마지판과 연결되는 견과류 캐릭터로, 셰리 캐스크 숙성에서 자주 나타납니다.", tip:"셰리 캐스크의 클래식한 견과류 노트 중 하나" },
+  "n-헤이즐넛": { emoji:"🥜", name:"헤이즐넛", desc:"로스팅된 헤이즐넛의 풍부한 고소함. 버터같은 크리미함을 동반하며, 때로 초콜릿과 결합하여 누텔라 같은 느낌을 줍니다.", tip:"초콜릿-견과 조합으로 발전하는 매력적인 노트" },
+  "n-호두": { emoji:"🫘", name:"호두", desc:"호두 특유의 살짝 쓴맛 있는 고소함. 깊이감 있는 너티한 캐릭터로, 오래 숙성된 위스키에서 탄닌과 함께 등장합니다.", tip:"오크 탄닌과 결합해 복합적인 견과 풍미를 만듦" },
+  "n-마지판": { emoji:"🍰", name:"마지판", desc:"아몬드와 설탕을 섞은 마지판의 달콤하고 너티한 향. 디저트 같은 인상을 주며, 셰리 캐스크 위스키의 클래식한 노트입니다.", tip:"크리스마스 케이크 같은 축제적 달콤함과 연결" },
+
+  // ── NOSE 달콤 ──
+  "n-바닐라": { emoji:"🍦", name:"바닐라", desc:"아메리칸 오크 버번 배럴에서 오는 대표적인 향. 따뜻하고 달콤한 바닐라 커스터드의 느낌으로, 거의 모든 위스키에서 발견되는 기본 숙성향입니다.", tip:"퍼스트 필 버번 배럴에서 가장 강하게 나타남" },
+  "n-카라멜": { emoji:"🍮", name:"카라멜", desc:"부드럽게 녹아내리는 카라멜의 달콤함. 버번 캐스크에서는 밝고 버터 같은 캐러멜, 셰리 캐스크에서는 다크 캐러멜에 가깝게 나타납니다.", tip:"바닐라, 토피와 함께 '스위트 오크' 프로파일 형성" },
+  "n-토피": { emoji:"🍬", name:"토피", desc:"설탕과 버터를 졸인 토피의 농축된 달콤함. 캐러멜보다 더 진하고 버터같은 느낌으로, 영국 전통 과자를 연상시킵니다.", tip:"버번 배럴 숙성의 클래식한 영국풍 스위트 노트" },
+  "n-꿀": { emoji:"🍯", name:"꿀", desc:"풍부하고 자연스러운 꿀의 단맛. 히스 꿀의 진한 풍미부터 아카시아 꿀의 가벼운 달콤함까지 다양한 스펙트럼을 가집니다.", tip:"스페이사이드 위스키의 시그니처 캐릭터 중 하나" },
+  "n-메이플시럽": { emoji:"🫧", name:"메이플 시럽", desc:"메이플 시럽 특유의 나무-단맛 복합체. 팬케이크에 뿌린 시럽의 따뜻하고 자연스러운 달콤함을 연상시킵니다.", tip:"아메리칸 오크의 영향을 받은 위스키에서 주로 발견" },
+  "n-버터스카치": { emoji:"🧈", name:"버터스카치", desc:"버터와 갈색 설탕의 조합. 카라멜보다 더 버터감 있고 약간 소금기를 느낄 수 있는 달콤한 캐릭터입니다.", tip:"버번 배럴 숙성 스카치의 클래식한 달콤함" },
+  "n-초콜릿": { emoji:"🍫", name:"초콜릿", desc:"밀크 초콜릿의 부드럽고 크리미한 달콤함. 다크 초콜릿보다 가볍고 친근하며, 셰리와 버번 캐스크 모두에서 나타날 수 있습니다.", tip:"견과류 노트와 결합하면 '프랄린' 같은 느낌" },
+
+  // ── NOSE 나무/오크 ──
+  "n-오크": { emoji:"🌳", name:"오크", desc:"위스키 숙성의 근간이 되는 오크통의 나무 향. 아메리칸 화이트 오크는 바닐라·코코넛을, 유러피안 오크는 탄닌·스파이스를 부여합니다.", tip:"숙성 연수가 길수록 오크 영향이 더 강해짐" },
+  "n-삼나무": { emoji:"🪵", name:"삼나무", desc:"시더(삼나무)의 깨끗하고 방향성 있는 나무 향. 연필 깎을 때의 향과도 비슷하며, 세련된 우디 캐릭터를 부여합니다.", tip:"스패니시 오크 캐스크에서 종종 느껴지는 노트" },
+  "n-송진": { emoji:"🫗", name:"송진", desc:"소나무 송진의 끈적하고 방향성 있는 향. 약간의 감귤류 뉘앙스를 동반하며, 레진(수지) 계열의 독특한 캐릭터입니다.", tip:"오래된 위스키에서 나타나는 복합적인 우디 노트" },
+  "n-샌달우드": { emoji:"🪷", name:"샌달우드", desc:"백단향(샌달우드)의 부드럽고 크리미한 나무 향. 이국적이고 명상적인 느낌으로, 오리엔탈 향수에서도 사용되는 고급스러운 노트.", tip:"장기 숙성 위스키에서 드물게 발견되는 프리미엄 노트" },
+  "n-오래된나무": { emoji:"🏚️", name:"오래된 나무", desc:"오래된 가구나 고서의 향. 세월이 느껴지는 빈티지한 나무 캐릭터로, 도서관이나 앤티크 가구점을 연상시킵니다.", tip:"20년 이상 장기 숙성 위스키에서 주로 발견" },
+  "n-연필심": { emoji:"✏️", name:"연필심", desc:"연필을 깎을 때 나는 특유의 나무+흑연 향. 미네랄리티와 우디함이 조합된 날카롭고 깨끗한 캐릭터입니다.", tip:"시더 노트와 연결되며 드라이한 캐릭터를 부여" },
+
+  // ── NOSE 스모키/피트 ──
+  "n-피트": { emoji:"💨", name:"피트", desc:"이탄(피트)을 태워 보리를 건조할 때 생기는 특유의 훈연향. 아일라 위스키의 대표 캐릭터로, 라프로익과 아드벡이 대표적입니다.", tip:"페놀 PPM 수치로 피트 레벨 측정 (5~50+ppm)" },
+  "n-모닥불연기": { emoji:"🏕️", name:"모닥불 연기", desc:"나무를 태우는 캠프파이어의 따뜻하고 그을린 향. 피트 스모크보다 더 건조하고 나무를 직접 태우는 느낌에 가깝습니다.", tip:"하이랜드 파크, 탈리스커에서 느낄 수 있는 중간 스모크" },
+  "n-훈제": { emoji:"🥓", name:"훈제", desc:"훈제 연어나 훈제 고기를 연상시키는 향. 식욕을 자극하는 세이보리한 스모크 캐릭터로, 해안가 증류소에서 자주 발견됩니다.", tip:"바다 소금과 결합해 '마린 스모크' 느낌을 만듦" },
+  "n-재": { emoji:"🪨", name:"재", desc:"불이 꺼진 후 남은 재의 건조하고 미네랄한 향. 클린하면서 스모키한 인상으로, 강한 피트 위스키의 뒷배경에 깔립니다.", tip:"매우 강한 피트 위스키에서 다른 스모크 노트를 지지" },
+  "n-타르": { emoji:"⚫", name:"타르", desc:"타르(역청)의 진하고 어두운 향. 아스팔트나 로프를 연상시키는 강렬한 캐릭터로, 헤비 피트 위스키에서 발견됩니다.", tip:"아드벡, 라프로익 같은 아일라 위스키의 특징" },
+  "n-병원약": { emoji:"💊", name:"병원약", desc:"소독약이나 반창고를 연상시키는 메디시널 향. 페놀 성분에서 오는 특유의 캐릭터로, 호불호가 강하게 갈립니다.", tip:"라프로익의 시그니처 노트 — '사랑하거나 싫어하거나'" },
+  "n-아이오딘": { emoji:"🧪", name:"아이오딘", desc:"요오드 소독액의 날카롭고 약품 같은 향. 해양성 피트 위스키의 독특한 캐릭터로, 바다의 미네랄리티와 연결됩니다.", tip:"해조류·바다 소금과 함께 '마린 피트' 프로파일 형성" },
+  "n-해조류": { emoji:"🌊", name:"해조류", desc:"바닷가의 해초와 소금기 있는 바다 공기를 연상시키는 향. 미네랄리티와 짠맛이 복합적으로 어우러진 독특한 캐릭터.", tip:"해변 숙성 환경의 영향을 직접적으로 보여주는 노트" },
+
+  // ── NOSE 스파이시 ──
+  "n-흑후추": { emoji:"🌶️", name:"흑후추", desc:"톡 쏘는 블랙 페퍼의 스파이시한 자극. 높은 알코올 도수에서 오는 열감과 결합되어 강렬한 인상을 줍니다.", tip:"캐스크 스트렝스 보틀링에서 특히 두드러짐" },
+  "n-계피": { emoji:"🫕", name:"계피", desc:"따뜻하고 매콤달콤한 시나몬 스파이스. 캐스크 스트렝스나 라이 위스키에서 특히 두드러지며, 달콤한 빵집을 연상시킵니다.", tip:"사과·캐러멜과 만나면 '애플파이' 노트 형성" },
+  "n-정향": { emoji:"🫛", name:"정향", desc:"정향(클로브)의 따뜻하고 날카로운 스파이스. 약간 마취성 있는 독특한 향미로, 유러피안 오크 캐스크에서 자주 나타납니다.", tip:"유제놀(eugenol) 화합물에서 오는 향신료 캐릭터" },
+  "n-생강": { emoji:"🫚", name:"생강", desc:"생강의 밝고 톡 쏘는 스파이시함. 따뜻한 열감과 약간의 시트러스 뉘앙스를 가지며, 젊은 위스키에서 활발하게 느껴집니다.", tip:"진저 와인이나 진저 비어를 연상시키는 밝은 스파이스" },
+  "n-넛맥": { emoji:"🥄", name:"넛맥", desc:"넛맥(육두구)의 따뜻하고 달콤한 스파이스. 크리스마스 시즌의 향신료를 연상시키며, 와인 캐스크 피니시에서 자주 등장합니다.", tip:"에그노그, 멀드 와인 같은 따뜻한 음료와 연결" },
+  "n-아니스": { emoji:"⭐", name:"아니스", desc:"아니스(팔각)의 달콤하면서 리큐르 같은 향. 감초와 비슷한 캐릭터로, 이국적인 스파이스 뉘앙스를 더합니다.", tip:"스패니시 셰리 캐스크에서 나타나는 이국적 노트" },
+  "n-고수": { emoji:"🌿", name:"고수", desc:"고수(코리앤더) 씨의 시트러스하고 허브같은 향. 신선하고 이국적인 스파이스로, 보태니컬한 캐릭터의 위스키에서 간혹 발견됩니다.", tip:"진(Gin)에서도 핵심 보태니컬로 사용되는 향신료" },
+
+  // ── NOSE 와인/주류 ──
+  "n-셰리": { emoji:"🍷", name:"셰리", desc:"셰리 와인의 풍부하고 산화적인 향. 건과일·견과류를 동반하는 따뜻한 캐릭터로, 올로로소·피노·PX 셰리마다 뉘앙스가 다릅니다.", tip:"셰리 캐스크 숙성 위스키의 가장 근본적인 캐릭터" },
+  "n-포트": { emoji:"🫙", name:"포트", desc:"포트 와인의 달콤하고 농축된 베리 향. 다크 프루츠가 가득한 풍성한 캐릭터로, 포트 파이프 피니시 위스키에서 강하게 나타납니다.", tip:"레드 베리·다크 초콜릿과 함께 럭셔리한 프로파일" },
+  "n-레드와인": { emoji:"🍇", name:"레드 와인", desc:"레드 와인의 타닌감 있고 과일적인 향. 베리·자두·체리가 어우러진 복합적인 캐릭터입니다.", tip:"레드 와인 캐스크 피니시 위스키의 시그니처" },
+  "n-건자두": { emoji:"🟤", name:"건자두", desc:"말린 자두(프룬)의 진하고 달콤한 향. 셰리 캐스크의 대표적 건과일 노트로, 올로로소 셰리 캐스크에서 건포도와 함께 등장합니다.", tip:"잼, 크리스마스 푸딩 같은 농축된 과일 달콤함" },
+  "n-다크베리": { emoji:"🫐", name:"다크 베리", desc:"블랙베리·블루베리 등 진한 베리류의 과일향. 풍성하고 깊이있는 과일 캐릭터로, 와인·셰리 캐스크에서 두드러집니다.", tip:"셰리·포트·와인 캐스크 피니시의 핵심 과일 노트" },
+  "n-포도": { emoji:"🍇", name:"포도", desc:"신선한 포도의 밝고 주시한 과일향. 와인 캐스크에서 오는 직접적인 포도 캐릭터로, 피니시 초기에 강하게 느껴집니다.", tip:"와인 캐스크 피니시 직후에 가장 선명하게 나타남" },
+
+  // ── NOSE 유제품 ──
+  "n-버터": { emoji:"🧈", name:"버터", desc:"신선한 버터의 크리미하고 풍부한 향. 부드럽고 매끄러운 텍스처를 연상시키며, 다이아세틸 성분에서 오는 캐릭터입니다.", tip:"곡물 위스키나 오일리한 바디의 위스키에서 발견" },
+  "n-크림": { emoji:"🥛", name:"크림", desc:"생크림의 부드럽고 풍성한 유지방 향. 위스키에 실크같은 부드러움을 더해주며, 오일리한 바디의 위스키에서 자주 발견됩니다.", tip:"바닐라·꿀과 함께 '크리미 스위트' 프로파일 형성" },
+  "n-우유": { emoji:"🫗", name:"우유", desc:"따뜻한 우유의 포근하고 부드러운 향. 가장 순한 유제품 계열 캐릭터로, 가벼운 곡물 위스키에서 느껴집니다.", tip:"편안하고 친근한 느낌을 주는 라이트한 노트" },
+  "n-치즈": { emoji:"🧀", name:"치즈", desc:"숙성 치즈의 복합적이고 발효된 향. 가벼운 치즈에서 파마산까지 다양한 스펙트럼으로, 주로 오래된 위스키에서 발견되는 희귀한 노트.", tip:"발효와 숙성 과정의 복합적 결과물" },
+  "n-사워크림": { emoji:"🫙", name:"사워크림", desc:"사워크림의 약간 신맛 있는 크리미함. 유산균 발효의 살짝 톡 쏘는 캐릭터로, 발효 과정의 미묘한 산미가 반영됩니다.", tip:"독특한 발효계 크리미 노트로 드물게 발견" },
+
+  // ── NOSE 미네랄/흙 ──
+  "n-습한흙": { emoji:"🪴", name:"습한 흙", desc:"비 온 뒤 젖은 흙냄새(페트리코르). 자연스럽고 근원적인 흙내음의 캐릭터로, 하이랜드·캠벨타운 위스키에서 테루아의 표현입니다.", tip:"자연과 대지를 직접 느끼게 하는 원시적 노트" },
+  "n-이끼": { emoji:"🌱", name:"이끼", desc:"축축한 이끼와 양치류의 그린하고 자연적인 향. 숲속 산책을 연상시키며, 스코틀랜드의 습한 기후를 반영합니다.", tip:"피트·헤더와 함께 '하이랜드 무어' 느낌을 형성" },
+  "n-버섯": { emoji:"🍄", name:"버섯", desc:"야생 버섯의 우마미 있는 흙냄새. 깊이감 있고 세이보리한 캐릭터로, 오래 숙성된 위스키에서 나타나는 성숙한 노트.", tip:"가을 숲속의 습하고 어시(earthy)한 분위기 연출" },
+  "n-젖은돌": { emoji:"💎", name:"젖은 돌", desc:"비에 젖은 자갈이나 돌의 미네랄한 향. 깨끗하고 미네랄리티 있는 인상으로, 해안가·섬 위스키에서 소금기와 함께 발견됩니다.", tip:"테루아와 물의 미네랄 성분이 반영된 노트" },
+  "n-가죽": { emoji:"👞", name:"가죽", desc:"고급 가죽 제품을 연상시키는 깊고 복합적인 향. 장기 숙성된 위스키에서 나타나는 성숙한 캐릭터로, 품격과 빈티지를 드러냅니다.", tip:"시가 박스·다크 프루츠와 함께 '라이브러리' 분위기" },
+  "n-담배": { emoji:"🚬", name:"담배", desc:"담배잎의 달콤하고 건조한 향. 시가 바를 연상시키는 빈티지한 캐릭터로, 가죽·오래된 나무와 함께 '올드 스타일' 프로파일을 형성합니다.", tip:"고숙성 셰리 캐스크 위스키에서 주로 발견" },
+
+  // ══════════ PALATE ══════════
+
+  "p-꿀": { emoji:"🍯", name:"꿀", desc:"히스 꿀의 진한 풍미부터 아카시아 꿀의 가벼운 달콤함까지 다양한 스펙트럼의 미각적 달콤함입니다.", tip:"레몬·진저와 함께 '핫 토디' 느낌 형성" },
+  "p-갈색설탕": { emoji:"🟫", name:"갈색 설탕", desc:"갈색 설탕의 모래같은 텍스처감 있는 달콤함. 백설탕보다 깊이감이 있으며, 당밀(몰래시스) 뉘앙스를 동반합니다.", tip:"럼 캐스크 피니시에서 더욱 강화되는 달콤함" },
+  "p-바닐라크림": { emoji:"🍦", name:"바닐라 크림", desc:"바닐라 빈 크림의 풍부하고 리치한 달콤함. 순수 바닐라보다 더 크리미하고 럭셔리한 텍스처를 가집니다.", tip:"퍼스트 필 버번 배럴의 크리미한 단맛 표현" },
+  "p-카라멜": { emoji:"🍮", name:"카라멜", desc:"구운 설탕의 달콤쌉싸름한 미각. 캐러멜라이즈 과정의 복합적 단맛으로, 가열 정도에 따라 밝은~다크 스펙트럼이 있습니다.", tip:"버번→밝은 캐러멜, 셰리→다크 캐러멜 뉘앙스" },
+  "p-잼": { emoji:"🫙", name:"잼", desc:"과일 잼의 농축된 과일 단맛. 어떤 과일이냐에 따라 뉘앙스가 달라지며, 딸기잼부터 마말레이드까지 다양합니다.", tip:"셰리→레드 베리 잼, 버번→마말레이드 경향" },
+  "p-말린과일": { emoji:"🍑", name:"말린 과일", desc:"건조된 과일의 응축된 단맛. 건살구·건무화과·대추 등의 깊고 농축된 과일 달콤함입니다.", tip:"셰리 캐스크 장기 숙성의 핵심 스위트 노트" },
+
+  "p-그린애플": { emoji:"🍏", name:"그린 애플", desc:"청사과를 한 입 베어물었을 때의 상큼한 산미와 과즙. 밝고 신선한 과일맛으로 혀 끝에서 느껴집니다.", tip:"로우랜드·젊은 스페이사이드 위스키에서 자주 등장" },
+  "p-시트러스": { emoji:"🍋", name:"시트러스", desc:"레몬·라임·자몽 등 감귤류의 산뜻한 산미. 입안을 깨우는 밝은 과일맛으로, 클린한 캐릭터를 부여합니다.", tip:"위스키의 밸런스를 잡아주는 중요한 산미 요소" },
+  "p-복숭아": { emoji:"🍑", name:"복숭아", desc:"잘 익은 복숭아의 달고 즙이 많은 과육감. 트로피컬하면서 부드러운 과일맛입니다.", tip:"오크 캐스크의 라크톤 성분과 관련된 과일 노트" },
+  "p-망고": { emoji:"🥭", name:"망고", desc:"열대 과일 망고의 이국적이고 크리미한 달콤함. 풍성한 트로피컬 캐릭터로 입안을 채웁니다.", tip:"리필 버번 캐스크·장기 숙성 그레인 위스키에서 발견" },
+  "p-무화과": { emoji:"🫒", name:"무화과", desc:"무화과의 부드럽고 독특한 단맛. 꿀·잼 같은 자연스러운 과일 달콤함을 제공합니다.", tip:"PX 셰리 캐스크에서 건무화과 형태로 자주 등장" },
+  "p-베리류": { emoji:"🫐", name:"베리류", desc:"딸기·라즈베리·블루베리 등 다양한 베리의 과즙 넘치는 과일맛. 셰리·와인 캐스크에서 풍부해집니다.", tip:"레드 베리~다크 베리까지 캐스크에 따라 다른 스펙트럼" },
+
+  "p-화이트페퍼": { emoji:"⚪", name:"화이트 페퍼", desc:"흑후추보다 섬세하고 미묘한 백후추의 따끔한 자극. 클린하고 세련된 스파이스 캐릭터입니다.", tip:"미네랄·시트러스와 함께 '깔끔한 스파이스' 형성" },
+  "p-계피": { emoji:"🫕", name:"계피", desc:"따뜻하고 매콤달콤한 시나몬의 혀를 감싸는 열감. 디저트 같은 스파이스로 하이 프루프에서 강합니다.", tip:"사과파이, 시나몬 롤 같은 베이킹 스파이스 느낌" },
+  "p-생강": { emoji:"🫚", name:"생강", desc:"생강의 톡 쏘는 따뜻한 자극. 입안에서 점점 퍼지는 열감을 주며, 높은 도수에서 페퍼와 함께 등장합니다.", tip:"진저 비어, 생강차를 연상시키는 밝은 열감" },
+  "p-칠리열감": { emoji:"🌶️", name:"칠리 열감", desc:"고추의 직접적이고 강한 열감. 혀와 목을 따뜻하게 달구는 스파이시한 자극으로, 캐스크 스트렝스에서 알코올과 결합됩니다.", tip:"물을 약간 타면(가수) 열감이 부드러워짐" },
+  "p-정향": { emoji:"🫛", name:"정향", desc:"정향(클로브)의 날카롭고 마취성 있는 스파이스. 치과에서 사용하는 유제놀 향으로, 유러피안 오크의 특징적 화합물입니다.", tip:"셰리 캐스크, 특히 스패니시 오크에서 강하게 발현" },
+  "p-올스파이스": { emoji:"🌐", name:"올스파이스", desc:"계피+넛맥+정향을 합친 듯한 올스파이스. 따뜻하고 복합적인 스파이스로, 여러 향신료가 어우러진 느낌입니다.", tip:"'크리스마스 스파이스' 또는 '멀드 와인' 연상" },
+
+  "p-토스티오크": { emoji:"🪵", name:"토스티 오크", desc:"불에 그을린 오크의 따뜻하고 고소한 나무맛. 캐스크 내부 차링/토스팅의 결과물로, 차링 레벨에 따라 강도가 달라집니다.", tip:"레벨 3~4 차링에서 가장 진한 토스티 캐릭터" },
+  "p-타닌": { emoji:"🫖", name:"타닌", desc:"홍차의 떫은맛과 유사한 오크 타닌. 입안을 조여주는 드라이한 수렴감으로, 위스키의 구조와 골격을 제공합니다.", tip:"유러피안 오크에서 더 강하게 나타나는 구조적 요소" },
+  "p-시더": { emoji:"🌲", name:"시더", desc:"시더(삼나무)의 깨끗하고 방향성 있는 나무맛. 연필심 같은 날카로운 우디 캐릭터를 부여합니다.", tip:"스패니시 오크의 영향이 반영된 세련된 우디 노트" },
+  "p-바닐린": { emoji:"🧪", name:"바닐린", desc:"오크에서 추출되는 바닐린 화합물의 순수한 바닐라맛. 과학적으로 측정 가능한 숙성의 직접적 결과물입니다.", tip:"아메리칸 화이트 오크가 유러피안보다 바닐린 함량 높음" },
+  "p-코코넛": { emoji:"🥥", name:"코코넛", desc:"아메리칸 오크의 라크톤(위스키 라크톤) 성분에서 오는 코코넛 크림맛. 트로피컬한 우디 노트입니다.", tip:"퍼스트 필 버번 배럴에서 특히 강하게 나타남" },
+
+  "p-다크초콜릿": { emoji:"🍫", name:"다크 초콜릿", desc:"카카오 70%+ 다크 초콜릿의 쌉싸름한 달콤함. 깊이 있고 고급스러운 미각 경험을 제공합니다.", tip:"올로로소 셰리 캐스크 장기 숙성에서 주로 발견" },
+  "p-에스프레소": { emoji:"☕", name:"에스프레소", desc:"진한 에스프레소의 로스티하고 비터한 맛. 커피 원두의 깊은 풍미와 쓴맛 캐릭터입니다.", tip:"높은 차링 레벨의 캐스크에서 나타나는 로스티 노트" },
+  "p-캐러멜라이즈": { emoji:"🔥", name:"캐러멜라이즈", desc:"설탕을 직화로 구운 캐러멜라이즈의 달콤쌉싸름함. 크렘 브륄레 표면 같은 바삭하고 달콤한 느낌입니다.", tip:"토스팅된 캐스크의 열처리 과정에서 발생" },
+  "p-구운곡물": { emoji:"🌾", name:"구운 곡물", desc:"로스팅된 보리·밀의 고소하고 견과류 같은 맛. 빵 껍질의 깊은 고소함과 따뜻함을 줍니다.", tip:"킬닝(건조) 과정의 온도와 시간에 따라 강도 변화" },
+  "p-토스트": { emoji:"🍞", name:"토스트", desc:"갓 구운 토스트의 따뜻하고 바삭한 고소함. 친근하고 편안한 아침 식탁의 캐릭터입니다.", tip:"캐스크 내부 차링 과정에서 생기는 토스티한 캐릭터" },
+
+  "p-BBQ": { emoji:"🍖", name:"BBQ", desc:"BBQ 그릴의 훈연향과 고기의 세이보리한 스모키맛. 식욕을 자극하는 따뜻하고 풍성한 캐릭터.", tip:"미디엄 피트 위스키에서 단맛과 결합해 BBQ 느낌" },
+  "p-피트흙": { emoji:"🪴", name:"피트 흙", desc:"습한 이탄(피트) 흙의 깊고 자연적인 흙맛. 스모크 아래 깔리는 근원적이고 프리미티브한 풍미.", tip:"아일라의 토양 특성이 직접 반영되는 독특한 맛" },
+  "p-연기": { emoji:"💨", name:"연기", desc:"순수한 연기의 직접적인 훈연맛. 목 뒤에서 느껴지는 스모키한 자극감으로, 피트 레벨에 비례합니다.", tip:"PPM이 높을수록 더 강렬한 스모크 경험" },
+  "p-크레오소트": { emoji:"⚫", name:"크레오소트", desc:"목재 방부제(크레오소트)의 진하고 어두운 타르맛. 헤비 피트 위스키에서 나타나는 강렬한 피트의 표현.", tip:"아드벡·라프로익의 핵심 스모키 캐릭터" },
+  "p-짭짤한재": { emoji:"🧂", name:"짭짤한 재", desc:"재에 소금기가 더해진 세이보리하고 미네랄한 맛. 스모크와 바다 소금이 만나는 독특한 캐릭터.", tip:"해안가 피트 위스키에서 바다 소금과 자연스럽게 결합" },
+
+  "p-바닷소금": { emoji:"🧂", name:"바닷소금", desc:"바다 소금의 짭조름한 미네랄맛. 단맛과 대비되어 위스키의 복합성을 크게 높여줍니다.", tip:"탈리스커, 올드 풀트니 같은 해안가 증류소의 시그니처" },
+  "p-올리브": { emoji:"🫒", name:"올리브", desc:"그린 올리브의 짭짤하고 살짝 쓴맛. 지중해를 연상시키는 세이보리한 캐릭터입니다.", tip:"미네랄·시트러스와 함께 드라이한 팔레트 형성" },
+  "p-굴": { emoji:"🦪", name:"굴", desc:"바다의 굴처럼 짭조름하고 미네랄한 브리니(briny) 맛. 해양성 위스키만의 독특한 캐릭터.", tip:"아일라·캠벨타운 위스키에서 드물게 발견되는 노트" },
+  "p-미네랄": { emoji:"💎", name:"미네랄", desc:"돌·자갈의 깨끗하고 무기질적인 맛. 테루아(토양)의 직접적 표현으로, 물(워터 소스)의 영향도 반영됩니다.", tip:"증류소가 사용하는 물의 미네랄 성분이 기여" },
+  "p-금속성": { emoji:"🔩", name:"금속성", desc:"금속적인 날카로운 미네랄맛. 동전을 입에 넣었을 때와 비슷한 특유의 감각으로, 구리 포트 스틸에서 유래하기도 합니다.", tip:"증류 과정의 구리 접촉 시간에 따라 달라짐" },
+
+  "p-다크초콜릿쓴맛": { emoji:"🍫", name:"다크 초콜릿 쓴맛", desc:"카카오 85%+ 초콜릿의 강한 쓴맛. 달콤함 없이 순수한 카카오의 비터한 캐릭터입니다.", tip:"장기 숙성 셰리 캐스크에서 타닌과 함께 나타남" },
+  "p-에스프레소b": { emoji:"☕", name:"에스프레소", desc:"커피의 쓰면서 복합적인 비터맛. 로스팅 강도에 따라 느낌이 달라지며, 높은 차링의 캐스크에서 발견됩니다.", tip:"다크 초콜릿과 합쳐지면 '모카' 비터 캐릭터" },
+  "p-호피": { emoji:"🍺", name:"호피", desc:"맥주의 홉에서 오는 허브같은 쓴맛. IPA를 마실 때와 비슷한 식물적 비터 캐릭터입니다.", tip:"보리 맥아의 특성이 반영된 곡물계 쓴맛" },
+  "p-타닌드라이": { emoji:"🫖", name:"타닌 드라이", desc:"과우려낸 홍차처럼 혀를 조이는 떫은맛. 입안의 수분을 빼앗는 드라이한 감각으로, 오크 과숙성 시 강해집니다.", tip:"유러피안 오크 캐스크에서 특히 강하게 나타남" },
+
+  "p-레몬": { emoji:"🍋", name:"레몬", desc:"레몬즙의 밝고 날카로운 산미. 혀 양쪽에서 침이 고이게 하는 시트러스 산으로, 단맛을 깔끔하게 정리해줍니다.", tip:"밸런스 좋은 위스키에서 '리프레싱' 역할 수행" },
+  "p-그린애플산": { emoji:"🍏", name:"그린 애플 산", desc:"말산(말릭 애시드)의 상큼하고 살짝 시큼한 맛. 사과주스 같은 신선한 산미로, 발효 과정에서 자연 생성됩니다.", tip:"젊은 위스키의 상큼한 캐릭터에 기여하는 자연 유기산" },
+  "p-발사믹": { emoji:"🫗", name:"발사믹", desc:"발사믹 식초의 달콤하면서 복합적인 산미. 달콤함과 신맛의 균형으로, 오래 숙성된 셰리 캐스크에서 나타납니다.", tip:"와인적 산미와 캐러멜의 달콤함이 결합된 복합 노트" },
+  "p-요거트": { emoji:"🥛", name:"요거트", desc:"요거트의 부드럽고 크리미한 유산균 산미. 가벼운 신맛과 크리미함이 조합된 독특한 캐릭터.", tip:"발효 과정의 유기산이 반영된 미묘하고 희귀한 산미" },
+  "p-와인산미": { emoji:"🍷", name:"와인 산미", desc:"레드·화이트 와인의 과일적 산미. 타르타르산 특유의 포도 기반 신맛으로, 와인 캐스크에서 자연 이전됩니다.", tip:"와인·셰리 캐스크 피니시의 자연스러운 부산물" },
+
+  "p-오일리": { emoji:"💧", name:"오일리", desc:"기름지고 윤기나는 질감. 혀 위를 매끄럽게 코팅하는 느낌으로, 긴 발효 시간과 증류 커트에서 결정됩니다.", tip:"클라이넬리시, 모트라크 같은 와시(waxy) 캐릭터와 연결" },
+  "p-실크": { emoji:"🎀", name:"실크", desc:"실크처럼 매끄럽고 섬세한 질감. 아무런 거침 없이 입안을 감싸는 느낌으로, 정제된 증류의 결과물입니다.", tip:"트리플 디스틸드·저도수 위스키에서 자주 나타남" },
+  "p-크리미": { emoji:"🥛", name:"크리미", desc:"크림처럼 풍부하고 두꺼운 질감. 유지방 같은 부드러운 코팅감으로, 풀 바디 위스키의 특징입니다.", tip:"오일리함과 함께 '럭셔리 마우스필' 표현에 사용" },
+  "p-워터리": { emoji:"💦", name:"워터리", desc:"물처럼 가볍고 얇은 질감. 바디가 가벼워 금방 사라지는 느낌으로, 과도한 가수(물 희석) 시 나타납니다.", tip:"너무 많은 물을 타면 풍미와 함께 바디도 약해짐" },
+  "p-두꺼운": { emoji:"🫙", name:"두꺼운", desc:"꿀이나 시럽처럼 점도 있는 질감. 입안에 오래 머무르는 무거운 바디로, 캐스크 스트렝스의 특징적 텍스처.", tip:"고숙성·캐스크 스트렝스 위스키의 풀 바디 표현" },
+  "p-떫음": { emoji:"🌿", name:"떫음", desc:"타닌에 의한 혀를 조이는 수렴감. 떫은 감처럼 입안이 마르는 느낌으로, 새 캐스크나 유러피안 오크에서 강합니다.", tip:"적당한 떫음은 구조감을, 과한 떫음은 불균형을 의미" },
+
+  // ══════════ FINISH ══════════
+
+  "f-길이": { emoji:"⏱️", name:"길이 (Length)", tags:"짧음 · 중간 · 길음 · 매우 긺", desc:"삼킨 후 맛이 지속되는 시간. 일반적으로 10초 미만은 짧음, 30초 이상은 길음, 1분 이상은 매우 긴 여운으로 평가합니다.", tip:"좋은 위스키일수록 여운이 길고 복합적인 경향이 있음" },
+  "f-열감": { emoji:"🔥", name:"열감 (Warmth)", tags:"부드러움 · 따뜻함 · 강한 열감 · 화끈", desc:"삼킨 후 목과 가슴에 퍼지는 열감의 강도. ABV(알코올 도수)와 직결되지만, 잘 만든 고도수 위스키는 부드러운 열감을 줍니다.", tip:"캐스크 스트렝스도 매끄러우면 '잘 통합된 알코올'로 평가" },
+  "f-달콤한여운": { emoji:"🍯", name:"달콤한 여운", tags:"꿀 · 캐러멜 · 바닐라 · 초콜릿", desc:"삼킨 후 입안에 남는 달콤함의 종류와 강도. 셰리 캐스크는 다크한 달콤함, 버번 캐스크는 밝은 달콤함이 남는 경향.", tip:"달콤한 여운이 길면 '디저트 같은 피니시'로 표현" },
+  "f-스파이시여운": { emoji:"🌶️", name:"스파이시 여운", tags:"후추 · 계피 · 생강 · 흑후추", desc:"삼킨 후 혀와 목 뒤에 남는 향신료적 자극. 따끔거리는 열감과 함께 서서히 사라지는 스파이스 캐릭터.", tip:"스파이시 여운은 음식 페어링 시 특히 고려할 요소" },
+  "f-과일여운": { emoji:"🍎", name:"과일 여운", tags:"시트러스 · 건과일 · 베리", desc:"삼킨 후 입안에 머무는 과일 풍미의 흔적. 신선한 과일~말린 과일까지 다양한 형태로 남습니다.", tip:"시트러스 여운은 깔끔함을, 건과일은 풍성함을 의미" },
+  "f-드라이타닌": { emoji:"🪨", name:"드라이 / 타닌", tags:"드라이 오크 · 수렴성 · 미네랄", desc:"입안의 수분을 빼앗는 드라이한 여운. 오크 타닌에 의한 떫은 감각과 미네랄리티가 결합됩니다.", tip:"타닌 구조가 좋으면 '구조감 있는 피니시'로 높이 평가" },
+  "f-스모키여운": { emoji:"🔥", name:"스모키 여운", tags:"피트 연기 · 훈제 · 재 · 흙", desc:"삼킨 후에도 오래 지속되는 훈연향. 피트 위스키의 경우 다른 모든 맛이 사라진 뒤에도 가장 마지막까지 남습니다.", tip:"피트 스모크는 보통 다른 맛보다 더 오래 지속됨" },
+  "f-클린": { emoji:"🌊", name:"클린 / 깨끗함", tags:"깔끔한 끝 · 잔향 없이 사라짐", desc:"여운이 깔끔하게 마무리되는 특성. 불쾌한 잔향 없이 산뜻하게 끝나는 피니시로, 경쾌한 위스키의 장점.", tip:"라이트 바디·로우랜드 위스키에서 자주 나타나는 클린 피니시" },
+  "f-오크우디": { emoji:"🍫", name:"오크 / 우디", tags:"새 오크 · 바닐라 · 코코넛 · 타닌", desc:"오크통에서 오는 나무 계열 여운. 바닐라의 달콤함부터 타닌의 떫은맛까지 다양한 오크의 표현이 남습니다.", tip:"숙성 연수에 비례하여 오크 여운이 강해지는 경향" },
+  "f-복합성": { emoji:"💫", name:"복합성 (Complexity)", tags:"단순 · 보통 · 복합적 · 레이어드", desc:"여운에서 느껴지는 맛의 층위와 다양성. 시간에 따라 다른 맛이 순차적으로 나타나면 높은 복합성으로 평가합니다.", tip:"레이어드 = 시간순으로 다른 맛이 펼쳐지는 최상급 피니시" },
+};
+
+// ═══════════════════════════════════════════
+// TOOLTIP LOGIC
+// ═══════════════════════════════════════════
+const tooltip = document.getElementById('tooltip');
+const overlay = document.getElementById('tooltipOverlay');
+const arrow = document.getElementById('tooltipArrow');
+let activeEl = null;
+
+function showTooltip(target, key) {
+  const d = DATA[key];
+  if (!d) return;
+
+  // Set active state
+  if (activeEl) activeEl.classList.remove('active');
+  activeEl = target;
+  activeEl.classList.add('active');
+
+  // Fill content
+  document.getElementById('tooltipEmoji').textContent = d.emoji;
+  document.getElementById('tooltipName').textContent = d.name;
+  document.getElementById('tooltipDesc').textContent = d.desc;
+  document.getElementById('tooltipTip').textContent = d.tip;
+
+  // Tags (for finish qualities)
+  const tagsEl = document.getElementById('tooltipTags');
+  tagsEl.innerHTML = '';
+  if (d.tags) {
+    tagsEl.style.display = 'flex';
+    d.tags.split(' · ').forEach(t => {
+      const span = document.createElement('span');
+      span.className = 'tooltip-tag-item';
+      span.textContent = t;
+      tagsEl.appendChild(span);
+    });
+  } else {
+    tagsEl.style.display = 'none';
+  }
+
+  // Show
+  tooltip.style.display = 'block';
+  overlay.classList.add('show');
+
+  // Position
+  requestAnimationFrame(() => {
+    const rect = target.getBoundingClientRect();
+    const tt = tooltip.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const pad = 10;
+
+    let left = rect.left + rect.width / 2 - tt.width / 2;
+    left = Math.max(pad, Math.min(left, vw - tt.width - pad));
+
+    const arrowLeft = rect.left + rect.width / 2 - left;
+    arrow.style.left = Math.min(Math.max(arrowLeft - 7, 16), tt.width - 30) + 'px';
+
+    const spaceBelow = vh - rect.bottom;
+    const above = spaceBelow < tt.height + 16;
+
+    if (above) {
+      tooltip.style.top = (rect.top - tt.height - 10) + 'px';
+      arrow.className = 'tooltip-arrow bottom';
+    } else {
+      tooltip.style.top = (rect.bottom + 10) + 'px';
+      arrow.className = 'tooltip-arrow top';
+    }
+
+    tooltip.style.left = left + 'px';
+
+    // Animate in
+    requestAnimationFrame(() => tooltip.classList.add('show'));
+  });
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('show');
+  overlay.classList.remove('show');
+  setTimeout(() => { tooltip.style.display = 'none'; }, 200);
+  if (activeEl) { activeEl.classList.remove('active'); activeEl = null; }
+}
+
+// Event listeners
+document.querySelectorAll('.tag[data-key]').forEach(tag => {
+  tag.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeEl === tag) { hideTooltip(); return; }
+    showTooltip(tag, tag.dataset.key);
+  });
+});
+
+document.querySelectorAll('.quality-item[data-key]').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeEl === item) { hideTooltip(); return; }
+    showTooltip(item, item.dataset.key);
+  });
+});
+
+overlay.addEventListener('click', hideTooltip);
+document.getElementById('tooltipClose').addEventListener('click', hideTooltip);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideTooltip(); });
+</script>
 </body>
 </html>
